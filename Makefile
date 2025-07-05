@@ -6,46 +6,63 @@ CFLAGS ?= -Wall -Wextra -O2
 SRC_DIR := src
 INC_DIR := include
 ASM_DIR := asm
-LIB_DIR := lib
-OUT_DIR := outputs/asm
 
-# Optional: also create C outputs dir for future use
-OUTPUTS_C_DIR := outputs/c
+OUT_C_DIR := outputs/c
+OUT_ASM_DIR := outputs/asm
 
-LIB_TARGET := $(LIB_DIR)/libsynth.a
-SRC_FILES := $(SRC_DIR)/synth.c
-ASM_FILES := $(wildcard $(ASM_DIR)/*.s)
-OBJ_FILES := $(SRC_FILES:.c=.o) $(ASM_FILES:.s=.o)
+REF_WAV := $(OUT_C_DIR)/output.wav
+ASM_WAV := $(OUT_ASM_DIR)/output.wav
 
-.PHONY: lib test run clean
+# Object files for C build
+C_OBJS := $(SRC_DIR)/main_c.o $(SRC_DIR)/synth_c.o
 
-# Ensure required directories exist
-$(LIB_DIR):
-	@mkdir -p $@
+# Object files for ASM build
+ASM_OBJS := $(SRC_DIR)/main_asm.o $(SRC_DIR)/synth_asm.o $(ASM_DIR)/render_constant.o
 
-$(OUT_DIR):
-	@mkdir -p $@
-	@mkdir -p $(OUTPUTS_C_DIR)
+.PHONY: run_c run_asm compare clean dirs
 
-# Build object files (add -Iinclude for headers)
-$(SRC_DIR)/%.o: $(SRC_DIR)/%.c | $(LIB_DIR)
+# Ensure output directories exist
+
+dirs:
+	@mkdir -p $(OUT_C_DIR) $(OUT_ASM_DIR)
+
+########################################
+# Pattern rules
+
+$(SRC_DIR)/main_c.o: $(SRC_DIR)/main.c | dirs
 	$(CC) $(CFLAGS) -I$(INC_DIR) -c $< -o $@
 
-# Rule for ASM objects
-$(ASM_DIR)/%.o: $(ASM_DIR)/%.s | $(LIB_DIR)
+$(SRC_DIR)/main_asm.o: $(SRC_DIR)/main.c | dirs
+	$(CC) $(CFLAGS) -I$(INC_DIR) -c $< -o $@ -DASM_VERSION=1
+
+$(SRC_DIR)/%.o: $(SRC_DIR)/%.c | dirs
+	$(CC) $(CFLAGS) -I$(INC_DIR) -c $< -o $@
+
+$(ASM_DIR)/%.o: $(ASM_DIR)/%.s | dirs
 	$(CC) $(CFLAGS) -c $< -o $@
 
-lib: $(LIB_TARGET)
+########################################
+# Targets
 
-$(LIB_TARGET): $(OBJ_FILES)
-	@mkdir -p $(dir $@)
-	ar rcs $@ $^
+run_c: test_c
+	./test_c
+	rsync -a test_c $(OUT_C_DIR)/ # optional copy binary
 
-test: $(SRC_DIR)/main.o lib | $(OUT_DIR)
-	$(CC) $(CFLAGS) -I$(INC_DIR) -o test $< $(LIB_TARGET) -lm
+test_c: $(C_OBJS)
+	$(CC) $(CFLAGS) -o $@ $^ -lm
 
-run: test
-	./test
+run_asm: test_asm
+	./test_asm
+
+test_asm: $(ASM_OBJS)
+	$(CC) $(CFLAGS) -o $@ $^ -lm
+
+compare: run_c run_asm compare_audio
+	./compare_audio $(REF_WAV) $(ASM_WAV)
+
+compare_audio: $(SRC_DIR)/compare_audio.c
+	$(CC) $(CFLAGS) -o $@ $< -lm
 
 clean:
-	rm -f $(OBJ_FILES) $(SRC_DIR)/main.o test $(LIB_TARGET) 
+	rm -f $(SRC_DIR)/*.o $(ASM_DIR)/*.o test_c test_asm compare_audio
+	rm -rf $(OUT_C_DIR) $(OUT_ASM_DIR) 

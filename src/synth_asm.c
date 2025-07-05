@@ -1,6 +1,6 @@
 #include "synth.h"
 
-// Forward declaration of assembly routine (implemented in asm/render_constant.s)
+// Forward declaration of assembly routine
 void render_asm_constant(float *left, float *right, int nframes);
 
 void render(float *left, float *right, int nframes) {

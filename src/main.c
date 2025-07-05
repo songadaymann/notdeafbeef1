@@ -5,7 +5,14 @@
 
 #define SAMPLE_RATE 44100
 #define DURATION_SECONDS 2
-#define OUTPUT_FILE "outputs/asm/output.wav"
+
+#ifdef ASM_VERSION
+#define OUTPUT_DIR "outputs/asm"
+#else
+#define OUTPUT_DIR "outputs/c"
+#endif
+
+#define OUTPUT_FILE OUTPUT_DIR "/output.wav"
 
 static void write_wav(const char *filename, const float *left, const float *right, int nframes);
 
@@ -21,7 +28,7 @@ int main(void) {
     render(left, right, frames);
 
     // Ensure output directory exists
-    system("mkdir -p outputs/asm");
+    system("mkdir -p " OUTPUT_DIR);
     write_wav(OUTPUT_FILE, left, right, frames);
 
     free(left);
