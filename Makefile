@@ -11,7 +11,8 @@ OUT_DIR := outputs
 
 LIB_TARGET := $(LIB_DIR)/libsynth.a
 SRC_FILES := $(SRC_DIR)/synth.c
-OBJ_FILES := $(SRC_FILES:.c=.o)
+ASM_FILES := $(wildcard $(ASM_DIR)/*.s)
+OBJ_FILES := $(SRC_FILES:.c=.o) $(ASM_FILES:.s=.o)
 
 .PHONY: lib test run clean
 
@@ -26,9 +27,14 @@ $(OUT_DIR):
 $(SRC_DIR)/%.o: $(SRC_DIR)/%.c | $(LIB_DIR)
 	$(CC) $(CFLAGS) -I$(INC_DIR) -c $< -o $@
 
+# Rule for ASM objects
+$(ASM_DIR)/%.o: $(ASM_DIR)/%.s | $(LIB_DIR)
+	$(CC) $(CFLAGS) -c $< -o $@
+
 lib: $(LIB_TARGET)
 
 $(LIB_TARGET): $(OBJ_FILES)
+	@mkdir -p $(dir $@)
 	ar rcs $@ $^
 
 test: $(SRC_DIR)/main.o lib | $(OUT_DIR)
