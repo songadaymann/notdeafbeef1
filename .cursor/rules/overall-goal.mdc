@@ -1,0 +1,12 @@
+---
+description: 
+globs: 
+alwaysApply: false
+---
+The overall goal here is to create an onchain NFT project in the style of Deafbeef. He's my friend. I want to subtly poke fun at him with this project. He always makes a huge deal out of the fact that his onchain works use "nothing but a c compiler".
+
+I want to try to do him one better, and make MY onchain project in assembly. 
+
+First we'll work on the generative music part
+Then we'll do the generative visuals
+Then finally we'll work on the blockchain stuff
