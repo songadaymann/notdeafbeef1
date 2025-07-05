@@ -7,7 +7,10 @@ SRC_DIR := src
 INC_DIR := include
 ASM_DIR := asm
 LIB_DIR := lib
-OUT_DIR := outputs
+OUT_DIR := outputs/asm
+
+# Optional: also create C outputs dir for future use
+OUTPUTS_C_DIR := outputs/c
 
 LIB_TARGET := $(LIB_DIR)/libsynth.a
 SRC_FILES := $(SRC_DIR)/synth.c
@@ -22,6 +25,7 @@ $(LIB_DIR):
 
 $(OUT_DIR):
 	@mkdir -p $@
+	@mkdir -p $(OUTPUTS_C_DIR)
 
 # Build object files (add -Iinclude for headers)
 $(SRC_DIR)/%.o: $(SRC_DIR)/%.c | $(LIB_DIR)
