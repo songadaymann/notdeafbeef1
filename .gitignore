@@ -1,0 +1,10 @@
+# Build artifacts
+*.o
+*.a
+test
+
+# Generated audio tests
+outputs/*.wav
+
+# macOS metadata
+.DS_Store 
